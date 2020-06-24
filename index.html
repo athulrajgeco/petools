@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Power Electronics Design Tools</title>
+    <style media="screen">
+      .act{
+        background-color:white;
+        color:black;
+        height:40px;
+        width:200px;
+      }
+      .dact{
+        background-color:black;
+        color:grey;
+        height:30px;
+        width:200px;
+      }
+      .ipbox{
+        float: left;
+        width:650px;
+        height:660px;
+        background-color:powderblue;
+        padding-left:5px;
+      }
+      .con{
+        float: left;
+        height:660px;
+        width:auto;
+      }
+      label{
+        margin-top:25px;
+        width:180px;
+        display: inline-block;
+      }
+      fieldset{
+        border: none;
+        width: 330px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .bx{
+        width: 80px;
+      }
+      #calc{
+        background-color:darkgreen;
+        border-radius:15px;
+        margin-top:5px;
+        margin-left:40%;
+        text-align:center;
+        width:120px;
+        height:40px;
+        color:#ffb8b8;
+      }
+      p{
+        font-weight:bold;
+        margin:20px 15px;
+      }
+      h2{
+        color:rgba(0,0,125,0.6);
+        font-family:sans-serif;
+        text-align:center;
+        padding-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align:center; margin:30px;">Power Electronics Design Tools</h1>
+    <div class="ipbox">
+    <h2>Converters</h2>
+      <button id='bk' class="act" onclick="bck(1)">Buck converter</button>
+      <button id='bs' class="dact" onclick="bck(2)">Boost converter</button>
+      <button id='bb' class="dact" onclick="bck(3)">Buck-Boost converter</button>
+      <br>
+      <fieldset>
+      <label  for="vin">Input voltage (V)</label>
+      <input class="bx" id='vin' type="text" name="vin">
+      <br>
+      <label for="vout">Output voltage (V)</label>
+      <input class="bx" id='vout'  type="text" name="vout">
+      <br>
+      <label  for="ir">Current ripple (A)</label>
+      <input class="bx" id='ir'  type="text" name="ir">
+      <br>
+      <label for="vr">Voltage ripple (V)</label>
+      <input class="bx" id='vr'  type="text" name="vr">
+      <br>
+      <label for="fr">Frequency (kHz)</label>
+      <input class="bx" id='fr'  type="text" name="fr">
+      <br>
+      <label for="rs">Resistance (ohms)</label>
+      <input class="bx" id='rs'  type="text" name="rs">
+      </fieldset>
+      <br>
+      <button id="calc" onclick="dr()" onmouseover="mover()" onmouseout="mout()" >Calculate</button>
+      <p>Duty ratio : <span id='dr'style="font-weight:normal"></span></p>
+      <p>Inductor : <span id='ind'style="font-weight:normal"></span></p>
+      <p>Capacitor : <span id='cap'style="font-weight:normal"></span></p>
+    </div>
+    <div class="con">
+    <img src="buckconverter.svg" alt="Converter" id='converter' style='float:right;margin-left:2vw;margin-right:5vw;'>
+    </div>
+    <script type="text/javascript">
+      let conv = 'buck';
+      let duty = 0.5;
+      let l=0.1;
+      let c=1.0;
+      let r=1.0;
+      function bck(n){
+        document.getElementById('bk').className = 'dact';
+        document.getElementById('bs').className = 'dact';
+        document.getElementById('bb').className = 'dact';
+        document.getElementById('dr').innerHTML='';
+        document.getElementById('ind').innerHTML='';
+        document.getElementById('cap').innerHTML='';
+        document.getElementById('vout').value='';
+        document.getElementById('vin').value='';
+        document.getElementById('vr').value='';
+        document.getElementById('ir').value='';
+        document.getElementById('fr').value='';
+        document.getElementById('rs').value='';
+        switch(n)
+        {
+          case 1:
+            document.getElementById('bk').className = 'act';
+            conv='buck';
+            document.getElementById('converter').src='buckconverter.svg';
+            break;
+          case 2:
+            document.getElementById('bs').className = 'act';
+            conv='boost';
+            document.getElementById('converter').src='boostconverter.svg';
+            break;
+          case 3:
+            document.getElementById('bb').className = 'act';
+            conv='bb';
+            document.getElementById('converter').src='bbconverter.svg';
+            break;
+        }
+      }
+      function dr() {
+        let vo=Number(document.getElementById('vout').value);
+        let vs=Number(document.getElementById('vin').value);
+        let vrp=Number(document.getElementById('vr').value);
+        let irp=Number(document.getElementById('ir').value);
+        let f=Number(document.getElementById('fr').value);
+        let r=Number(document.getElementById('rs').value);
+        if(conv=='buck'){
+          duty=vo/vs;
+          if(duty>1 || duty<0 || isNaN(duty))
+            alert("Check converter type and input values");
+          else {
+            document.getElementById('dr').innerHTML=Number(duty.toFixed(3));
+            l=(vs*duty*(1-duty))/(f*irp);
+            c=(vs*duty*(1-duty)*(10**3))/(8*f*f*l*vrp);
+            document.getElementById('ind').innerHTML=Number(l.toFixed(3))+' mH';
+            document.getElementById('cap').innerHTML=Number(c.toFixed(3))+' '+'&#956'+'F';
+          }
+        }
+        else if(conv=='boost'){
+          duty=1-(vs/vo);
+          if(duty>1 || duty<0 || isNaN(duty))
+            alert("Check converter type and input values");
+          else {
+            document.getElementById('dr').innerHTML=Number(duty.toFixed(3));
+            l=(vs*duty)/(f*irp);
+            c=(vo*duty*(10**3))/(f*r*vrp);
+            document.getElementById('ind').innerHTML=Number(l.toFixed(3))+' mH';
+            document.getElementById('cap').innerHTML=Number(c.toFixed(3))+' '+'&#956'+'F';
+          }
+        }
+        else if(conv=='bb'){
+          duty=vo/(vo+vs);
+          if(duty>1 || duty<0 || isNaN(duty))
+            alert("Check converter type and input values");
+          else {
+            document.getElementById('dr').innerHTML=Number(duty.toFixed(3));
+            l=(vs*duty)/(f*irp);
+            c=(vo*duty*(10**3))/(f*r*vrp);
+            document.getElementById('ind').innerHTML=Number(l.toFixed(3))+' mH';
+            document.getElementById('cap').innerHTML=Number(c.toFixed(3))+' '+'&#956'+'F';
+          }
+        }
+        else {
+          ;
+        }
+      }
+      function mover()
+      {
+        document.getElementById("calc").style.backgroundColor='#0af230';
+        document.getElementById("calc").style.color='#222222';
+      }
+      function mout()
+      {
+        document.getElementById("calc").style.backgroundColor='darkgreen';
+        document.getElementById("calc").style.color='#ffb8b8';
+      }
+    </script>
+  </body>
+</html>
